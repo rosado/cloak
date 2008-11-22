@@ -1,0 +1,184 @@
+;; simple build system in Clojure
+;; Roland Sadowski [szabla gmail com] http://www.haltingproblem.net
+
+;; Copyright (c) 2008 Roland Sadowski. All rights reserved.  The use and
+;; distribution terms for this software are covered by the Common
+;; Public License 1.0 (http://www.opensource.org/licenses/cpl1.0.php)
+;; which can be found in the file CPL.TXT at the root of this
+;; distribution.  By using this software in any fashion, you are
+;; agreeing to be bound by the terms of this license.  You must not
+;; remove this notice, or any other, from this software. 
+
+(ns rosado.cloak.main
+  (:use rosado.math.graph)
+  (:require [rosado.io :as io]))
+
+(defstruct task-struct :actions :deps :desc)
+
+(def *tasks* (ref {}))					;holds tasks and actions
+(def *queue*)							;holds sorted tasks
+(def #^{:private true}
+	 task-table (ref {:to-int {} :to-task {}}))
+(def #^{:private true}
+	 task-order)
+
+(def *verbose* false)
+(def *error-handler* println)
+
+(defmulti get-task class)
+
+(defmethod get-task java.lang.Integer [index]
+  ((@task-table :to-task) index))
+
+(defmethod get-task clojure.lang.Keyword [kw]
+  ((@task-table :to-int) kw))
+
+(defmethod get-task java.lang.String [fname]
+  ((@task-table :to-int) fname))
+
+(defn add-task [task-name task-info]
+  (dosync (ref-set *tasks* (assoc @*tasks* task-name task-info))))
+
+(defn- annotate-task 
+  "Adds metadata to task. Does not save it in *tasks*."
+  [tsk kw val]
+  (let [t (get-task tsk)]
+	(with-meta t (merge (meta t) {kw val}))))
+
+(defn- task-annotations 
+  "Returns annotations (meta-data) of a task."
+  [tsk]
+  (meta (get-task tsk)))
+
+(defn do-task [task-name]
+  (let [tsk (@*tasks* task-name)]
+	(when-let [prefun (tsk :pre-check)]
+		(when (prefun)
+		  (when *verbose* (println task-name "needs update"))))
+	(when-let [actions (tsk :actions)]
+		(actions))))
+
+(defn clear-tasks
+  "Clears task table and *tasks* map (which holds defined tasks)"
+  []
+  (dosync
+   (ref-set *tasks* {})
+   (ref-set task-table {})))
+
+(derive clojure.lang.LazilyPersistentVector ::Dependencies)
+(derive clojure.lang.PersistentVector ::Dependencies)
+(derive clojure.lang.IPersistentList ::Actions)
+
+(defmulti parse-task (fn [mp elems] (class (first elems))))
+
+(defmethod parse-task ::Dependencies [mp elems]
+  (assoc mp :deps (first elems)))
+
+(defmethod parse-task java.lang.String [mp elems]
+  (assoc mp :desc (first elems)))
+
+(defmethod parse-task ::Actions [mp elems]
+  (assoc mp :actions `(fn [] (do ~@elems))))
+
+(defn- to-task-struct [sequ]
+  (loop [r sequ tsk (struct task-struct nil nil nil)]
+	(if (not (tsk :actions))			;:actions should be added last
+	  (recur (rest r) (parse-task tsk r))
+	  tsk)))
+
+;; throws exception if task already defined
+(defn- fail-if-defined [task-name]
+  (when (contains? @*tasks* task-name)
+	(throw (Exception. "Task already defined."))))
+
+(defmacro task [task-name & rst]
+  (fail-if-defined task-name)
+  (let [task (to-task-struct rst)]
+	`(add-task ~task-name ~task)))
+
+(defn- pre-check-fn [file-name fnames]
+  `(fn [#^String e#]
+	 (let [f# (java.io.File. ~file-name)
+		   o# (java.io.File. e#)]
+	   (if (not (io/exists? o#))
+		 (let [msg# (format "File dependency not met: %s" e#)]
+		   (println "Failure:" msg#)
+		   (throw (Exception. msg#))))
+	   (if (io/exists? f#)
+		 (io/newer? o# f#)
+		 true))))
+
+(defmacro file [file-name & rst]
+  (fail-if-defined file-name)
+  (let [task (to-task-struct rst)
+		fnames (doall (filter #(isa? (class %) String) (:deps task)))
+		pre-check  `(fn [] (some ~(pre-check-fn file-name fnames) (list ~@fnames)))
+		ftask (assoc task :pre-check pre-check)]
+	`(add-task ~file-name ~ftask)))
+
+(defn- make-table
+  "Makes a dispatch table between task names and indices."
+  [task-map]
+  (let [ks (keys task-map) indices (range 1 (inc (count ks)))]
+	{:to-int (zipmap ks indices) :to-task (zipmap indices ks)}))
+
+(defn- task-names [] (-> @task-table :to-int keys))
+
+(defn- task-indices [] (-> @task-table :to-int vals))
+
+(defn init-tasks []
+  (dosync (ref-set task-table (make-table @*tasks*))))
+
+;; function used for resolving dependencies
+;; 
+(def
+ #^{:private true}
+ sort-tasks (make-dfs
+			 (:tree-edge? (fn [g a b]
+							(not (discovered? g b))))
+			 (:back-edge? (fn [g a b]
+							;(println "BACK-EDGE?")
+							(not (tag? g b :post))))
+			 (:back-edge-hook (fn [arg-m [a b]]
+								(*error-handler* (format "Circular dependency: %s <=> %s."
+														 (get-task a)
+														 (get-task b)))
+								(throw (Exception. "Dependency graph not is not a DAG"))))
+			 (:increment-pre #(inc %1))
+			 (:increment-post #(inc %1))
+			 (:mark-pre-visited #(tag-vertex %1 %2 :pre %3))
+			 (:mark-post-visited (fn [g vi cnt]
+									 (when (= (tag? g vi :compo) 1) 
+									   (set! *queue* (conj *queue* vi)))
+									 (tag-vertex g vi :post cnt)))
+			 (:increment-component (fn [cnt]
+									 (inc cnt)))
+			 (:mark-component (fn [g v cn]
+							    ;(println "mark-component: " [g v cn])
+								(tag-vertex g v :compo cn)))))
+
+(defn- add-task-vertex [g index]
+  (add-vertex g
+			  index
+			  (make-vertex {}
+						   (let [alist (map #(get-task %1)
+											(:deps (@*tasks* (get-task index))))]
+							 (when alist alist)))))
+
+(defn make-task-graph [tasks]
+  (let [tab (init-tasks)
+		g (make-graph (count tasks))]
+	(reduce add-task-vertex g (task-indices))))
+
+(defn execute-task [task-kw]
+  (binding [*queue* []]
+	(when *verbose*
+	  (println "ZADANIA: " (task-indices) "//" (task-names)))
+	(let [g (sort-tasks (make-task-graph @*tasks*) (get-task task-kw))])
+	(doseq [q *queue*]
+		(println "== Executing task" (get-task q))
+	  (try
+	   (do-task (get-task q))
+	   (catch Exception e
+		 (*error-handler* "Error executing task" q)
+		 (throw e))))))
