@@ -131,9 +131,9 @@
 (defmethod parse-arg nil [args]
   (run-program))
 
-(defn main-fun []
+(defn -main [& args]
   (try
-   (parse-arg *command-line-args*)
+   (parse-arg args)
    (catch Exception e
 	 (println "Error:" (.getMessage e))
 	 (System/exit 1))))
