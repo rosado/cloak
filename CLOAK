@@ -1,0 +1,25 @@
+(ns rosado.cloak-build
+  (:use rosado.cloak.main)
+  (:use rosado.cloak.actions))
+
+(task :clean
+	  "Removes the 'classes' directory "
+	  (when (exists? "classes")
+		(sh "rm -r classes" :dofail)))
+
+(task :make-dir [:clean]
+	  (mkdir "classes"))
+
+(task :default [:make-dir]
+	  (binding [*compile-path* "classes"]
+		(compile 'rosado.cloak)
+		(compile 'rosado.cloak.main)
+		(compile 'rosado.cloak.actions)))
+
+(task :jar ["bin/rosado.cloak.jar"]
+	  "Creates a jar file with compiled Cloak class files.")
+
+(file "bin/rosado.cloak.jar" ["classes"]
+	  (when-not (exists? "bin")
+		(mkdir "bin"))
+	  (sh "jar cf bin/rosado.cloak.jar -C classes rosado" :dofail))
