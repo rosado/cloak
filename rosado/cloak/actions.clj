@@ -12,11 +12,16 @@
 
 (ns rosado.cloak.actions
   (:use rosado.utils)
-  (:require [rosado.io :as io :only exists?])
+  (:require [rosado.io :as io :only exists? delete])
   (:import (java.io File FileInputStream FileOutputStream)))
 
+(defn exists?
+  "Returns true if file/directory exists."
+  [fname] (io/exists? fname))
+
 (defn sh
-  "Performs a shell command."
+  "Executes a shell command. Fails silently.
+  Pass :dofail keyword argument if you want it to throw exception."
   ([command]
 	 (run-command command))
   ([command flag]
@@ -63,5 +68,7 @@
 	  (-> (File. dir) .mkdirs))
   :ok)
 
-(defn exists? [fname] (io/exists? fname))
-
+(defn rm
+  "Remove specified file/directory."
+  [fname]
+  (delete fname))
