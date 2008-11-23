@@ -181,4 +181,6 @@
 	   (do-task (get-task q))
 	   (catch Exception e
 		 (*error-handler* "Error executing task" q)
-		 (throw e))))))
+		 (throw e)))
+	  (newline)
+	  (println "Done."))))
