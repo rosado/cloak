@@ -12,12 +12,17 @@
 
 (ns rosado.cloak.actions
   (:use rosado.utils)
+  (:require [rosado.io :as io :only exists?])
   (:import (java.io File FileInputStream FileOutputStream)))
 
 (defn sh
   "Performs a shell command."
-  [command]
-  (run-command command))
+  ([command]
+	 (run-command command))
+  ([command flag]
+	 (cond (= flag :dofail) (when (= :fail (sh command))
+							  (throw (Exception. "shell command failed.")))
+		   :else (throw (IllegalArgumentException. (format "sh: unsupported flag %s" (str flag)))))))
 
 (defn copy
   "Copies a file"
@@ -58,5 +63,5 @@
 	  (-> (File. dir) .mkdirs))
   :ok)
 
-
+(defn exists? [fname] (io/exists? fname))
 
