@@ -80,6 +80,9 @@
 (defmethod parse-task ::Actions [mp elems]
   (assoc mp :actions `(fn [] (do ~@elems))))
 
+(defmethod parse-task nil [mp elems] ;dummy task, no actions
+  (assoc mp :actions `(fn[] nil))) 
+
 (defn- to-task-struct [sequ]
   (loop [r sequ tsk (struct task-struct nil nil nil)]
 	(if (not (tsk :actions))			;:actions should be added last
