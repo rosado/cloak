@@ -9,6 +9,12 @@
 ;; agreeing to be bound by the terms of this license.  You must not
 ;; remove this notice, or any other, from this software. 
 
+;; Here's how it works every (task ...) and (file ...) call adds a map
+;; to the *tasks* map {:task-name {:actions ... :deps ... :desc ...}}.
+;; Then a graph is created and sorted topologically (any cycles are
+;; detected + exception is thrown). task-table provides a translation
+;; between task names and indices of the graph.
+
 (ns rosado.cloak.main
   (:use rosado.math.graph)
   (:require [rosado.io :as io]))
