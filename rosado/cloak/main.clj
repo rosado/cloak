@@ -31,15 +31,15 @@
 (def *verbose* false)
 (def *error-handler* println)
 
-(defmulti get-task class)
+(defmulti to-task class)
 
-(defmethod get-task java.lang.Integer [index]
+(defmethod to-task java.lang.Integer [index]
   ((@task-table :to-task) index))
 
-(defmethod get-task clojure.lang.Keyword [kw]
+(defmethod to-task clojure.lang.Keyword [kw]
   ((@task-table :to-int) kw))
 
-(defmethod get-task java.lang.String [fname]
+(defmethod to-task java.lang.String [fname]
   ((@task-table :to-int) fname))
 
 (defn add-task [task-name task-info]
@@ -48,13 +48,13 @@
 (defn- annotate-task 
   "Adds metadata to task. Does not save it in *tasks*."
   [tsk kw val]
-  (let [t (get-task tsk)]
+  (let [t (to-task tsk)]
 	(with-meta t (merge (meta t) {kw val}))))
 
 (defn- task-annotations 
   "Returns annotations (meta-data) of a task."
   [tsk]
-  (meta (get-task tsk)))
+  (meta (to-task tsk)))
 
 (defn do-task [task-name]
   (let [tsk (@*tasks* task-name)]
@@ -150,8 +150,8 @@
 							(not (tag? g b :post))))
 			 (:back-edge-hook (fn [arg-m [a b]]
 								(*error-handler* (format "Circular dependency: %s <=> %s."
-														 (get-task a)
-														 (get-task b)))
+														 (to-task a)
+														 (to-task b)))
 								(throw (Exception. "Dependency graph not is not a DAG"))))
 			 (:increment-pre #(inc %1))
 			 (:increment-post #(inc %1))
@@ -170,8 +170,8 @@
   (add-vertex g
 			  index
 			  (make-vertex {}
-						   (let [alist (map #(get-task %1)
-											(:deps (@*tasks* (get-task index))))]
+						   (let [alist (map #(to-task %1)
+											(:deps (@*tasks* (to-task index))))]
 							 (when alist alist)))))
 
 (defn make-task-graph [tasks]
@@ -183,11 +183,11 @@
   (binding [*queue* []]
 	(when *verbose*
 	  (println "ZADANIA: " (task-indices) "//" (task-names)))
-	(let [g (sort-tasks (make-task-graph @*tasks*) (get-task task-kw))])
+	(let [g (sort-tasks (make-task-graph @*tasks*) (to-task task-kw))])
 	(doseq [q *queue*]
-		(println "== Executing task" (get-task q))
+		(println "== Executing task" (to-task q))
 	  (try
-	   (do-task (get-task q))
+	   (do-task (to-task q))
 	   (catch Exception e
 		 (*error-handler* "Error executing task" q)
 		 (throw e)))
