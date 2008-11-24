@@ -12,7 +12,7 @@
 
 (ns rosado.cloak.actions
   (:use rosado.utils)
-  (:require [rosado.io :as io :only exists?])
+  (:require [rosado.io :as io :only (exists? delete)])
   (:import (java.io File FileInputStream FileOutputStream)))
 
 (defn sh
@@ -65,3 +65,7 @@
 
 (defn exists? [fname] (io/exists? fname))
 
+(defn rm
+  "Removes a file or direcory (like 'rm -r dirname')."
+  [fname]
+  (io/delete fname))
