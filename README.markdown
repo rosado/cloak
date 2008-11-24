@@ -55,6 +55,11 @@ Cloak requires rosado.math.graph and rosado.io, my helper libraries
 available as [rosado libs][mylibs] from github. To run the tests
 you'll need test-is from [clojure-contrib][contrib].
 
+TODO
+----------
+
+* copying files over ssh
+* more complete seto of actions for file operations
 
 [rake]:http://rake.rubyforge.org/
 [mylibs]:http://github.com/...
