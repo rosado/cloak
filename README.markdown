@@ -60,6 +60,7 @@ TODO
 
 * copying files over ssh
 * more complete seto of actions for file operations
+* better error reporting
 
 [rake]:http://rake.rubyforge.org/
 [mylibs]:http://github.com/...
