@@ -5,7 +5,7 @@
 (task :clean
 	  "Removes the 'classes' directory "
 	  (when (exists? "classes")
-		(sh "rm -r classes" :dofail)))
+		(rm "classes")))
 
 (task :make-dir [:clean]
 	  (mkdir "classes"))
