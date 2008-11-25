@@ -67,7 +67,7 @@ project's CLOAK file) but the following must be true for it to work:
 What it isn't
 -------------
 
-It's not an `ant` or `maven` replacement. No ac
+It's not an `ant` or `maven` replacement. 
 
 
 Dependencies
