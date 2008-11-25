@@ -52,9 +52,7 @@
   "Moves a file"
   [src target]
   (let [src (File. src) target (File. target)]
-	(if (.renameTo src target)
-	  :ok
-	  :fail)))
+	(.renameTo src target)))
 
 (defn mkdir
   "Creates directories, including necessary parent dirs."
