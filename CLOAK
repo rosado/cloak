@@ -2,15 +2,15 @@
   (:use rosado.cloak.main)
   (:use rosado.cloak.actions))
 
+;; assumptions:  clojure.jar, clojure-contrib.jar, rosado.jar in classpath
+;; also, classes dir must already be in your classpath (for compilation)
+
 (task :clean
 	  "Removes the 'classes' directory "
-	  (when (exists? "classes")
-		(rm "classes")))
+	  (when (exists? "classes/rosado")
+		(rm "classes/rosado")))
 
-(task :make-dir [:clean]
-	  (mkdir "classes"))
-
-(task :default [:make-dir]
+(task :default
 	  (binding [*compile-path* "classes"]
 		(compile 'rosado.cloak)
 		(compile 'rosado.cloak.main)
@@ -19,7 +19,7 @@
 (task :jar ["bin/rosado.cloak.jar"]
 	  "Creates a jar file with compiled Cloak class files.")
 
-(file "bin/rosado.cloak.jar" ["classes"]
+(file "bin/rosado.cloak.jar" ["classes/rosado"]
 	  (when-not (exists? "bin")
 		(mkdir "bin"))
 	  (sh "jar cf bin/rosado.cloak.jar -C classes rosado" :dofail))
