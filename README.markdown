@@ -67,7 +67,7 @@ project's CLOAK file) but the following must be true for it to work:
 What it isn't
 -------------
 
-It's not an `ant` or `maven` replacement. No ac
+It's not an `ant` or `maven` replacement. 
 
 
 Dependencies
@@ -86,6 +86,6 @@ TODO
 * better error reporting
 
 [rake]:http://rake.rubyforge.org/
-[mylibs]:http://github.com/...
+[mylibs]:https://github.com/rosado/libs4clj/tree
 [clojure]:http://clojure.org/
 [contrib]:http://sourceforge.net/projects/clojure-contrib
