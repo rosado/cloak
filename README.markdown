@@ -32,6 +32,28 @@ rosado.cloak.actions provides a couple of basic file operations:
 command). Windows users must be careful to use a "cmd ..." as a
 parameter to `sh` when running a batch script.
 
+Syntax
+----------
+
+Tasks:
+
+		(task :task-name [:task :other-task]
+			  "Task description"
+			  (action1 arg)
+			  (action args))
+
+Where task's name should be a keyword, task's dependencies should be a
+vector of task names of file task names (optional), description should
+be a string (optional) and the the task's body.
+
+File tasks:
+
+	 (file "file_name" ["other.xml" :some-task]
+	 	   "Description"
+	 	   (action-to-generate-file "file_name"))
+
+File tasks can't be specified as targets on the command line.
+
 Compiling Clojure sources
 -------------------------
 
@@ -52,14 +74,15 @@ Dependencies
 ------------
 
 Cloak requires rosado.math.graph and rosado.io, my helper libraries
-available as [rosado libs][mylibs] from github. To run the tests
-you'll need test-is from [clojure-contrib][contrib].
+which are in the lib directory and available as [rosado libs][mylibs]
+from github. To run the tests you'll need test-is from
+[clojure-contrib][contrib].
 
 TODO
 ----------
 
 * copying files over ssh
-* more complete seto of actions for file operations
+* more complete set of actions for file operations
 * better error reporting
 
 [rake]:http://rake.rubyforge.org/
