@@ -59,10 +59,12 @@
 (defn do-task [task-name]
   (let [tsk (@*tasks* task-name)]
 	(when-let [prefun (tsk :pre-check)]
-		(when (prefun)
-		  (when *verbose* (println task-name "needs update"))))
-	(when-let [actions (tsk :actions)]
-		(actions))))
+		(if (prefun) 
+		  (do
+			(when *verbose* (println task-name "needs update"))
+			(when-let [actions (tsk :actions)]
+				(actions)))
+		  (println "* skipping")))))
 
 (defn clear-tasks
   "Clears task table and *tasks* map (which holds defined tasks)"
