@@ -12,7 +12,7 @@
 
 (ns rosado.cloak.actions
   (:use rosado.utils)
-  (:require [rosado.io :as io :only (exists? delete)])
+  (:require [rosado.io :as io :only (exists? delete mkdir)])
   (:import (java.io File FileInputStream FileOutputStream)))
 
 (defn sh
@@ -59,9 +59,7 @@
 (defn mkdir
   "Creates directories, including necessary parent dirs."
   [& dirs]
-  (doseq [dir dirs]
-	  (-> (File. dir) .mkdirs))
-  :ok)
+  (apply io/mkdir dirs))
 
 (defn exists? [fname] (io/exists? fname))
 
