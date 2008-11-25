@@ -86,6 +86,6 @@ TODO
 * better error reporting
 
 [rake]:http://rake.rubyforge.org/
-[mylibs]:http://github.com/...
+[mylibs]:https://github.com/rosado/libs4clj/tree
 [clojure]:http://clojure.org/
 [contrib]:http://sourceforge.net/projects/clojure-contrib
