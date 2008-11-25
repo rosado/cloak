@@ -61,8 +61,8 @@ Currently AOT (Ahead Of Time) compilation is still an experimental
 feature of Clojure (but not for long). It works (look at this
 project's CLOAK file) but the following must be true for it to work:
 
-* directory with sources *AND* "classes" directory must be in you
-* class path the "classes" directory must exists when the JVM starts up to execute the `compile` function (otherwise strange errors might occur).
+* directory with sources *AND* "classes" directory must be in your classpath
+* the "classes" directory must exists when the JVM starts up to execute the `compile` function (otherwise strange errors might occur).
 
 What it isn't
 -------------
