@@ -57,7 +57,7 @@
   (do
 	(doseq [t (for [key (keys taskmap)]
 				(assoc (@*tasks* key) :name key))]
-		(print (t :name) "\t" )
+		(print (format " %1$-16s" (t :name)))
 	  (if (t :desc)
 		(println (t :desc))
 		(println)))))
@@ -77,17 +77,21 @@
 		 (empty? *target-queue*) (run-tasks [*default-task*]) 
 		 :else (run-tasks *target-queue*))))
 
+(def {:private true} 
+	 cmd-line-opts {"-d" "describe tasks"
+					  "-f taskfile" "use taskfile instad of CLOAK"
+					  "-t" "run cloak, but don't execute actions (try)"
+					  "-h" "print help"})
+
 (defn print-help []
-  (println "RTFM!")) ;TODO
+  (println " Cloak. A simple automation tool.")
+  (newline)
+  (doseq [[opt des] cmd-line-opts]
+	  (println (format " %1$-15s %2$s" opt des))))
 
 (defn print-usage []
   (error (format "usage: %s [options] [task-name]" *progname*))
   (error (format "try '%s -h' for more information." *progname*)))
-
-(def *cmd-line-opts* {"-d" nil
-					  "-f taskfile" nil
-					  "-t" nil
-					  "-h" nil})
 
 ;; parses command line arguments
 (defmulti parse-arg first)
