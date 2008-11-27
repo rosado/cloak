@@ -16,6 +16,10 @@
 		(compile 'rosado.cloak.main)
 		(compile 'rosado.cloak.actions)))
 
+(task :jar-src
+	  "Creates a jar file with Cloak's sources"
+	  (sh "jar cf bin/rosado.cloak.jar rosado" :dofail))
+
 (task :jar ["bin/rosado.cloak.jar"]
 	  "Creates a jar file with compiled Cloak class files.")
 
