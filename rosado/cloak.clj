@@ -77,7 +77,7 @@
 		 (empty? *target-queue*) (run-tasks [*default-task*]) 
 		 :else (run-tasks *target-queue*))))
 
-(def {:private true} 
+(def #^{:private true} 
 	 cmd-line-opts {"-d" "describe tasks"
 					  "-f taskfile" "use taskfile instad of CLOAK"
 					  "-t" "run cloak, but don't execute actions (try)"
