@@ -10,7 +10,7 @@
 	  (when (exists? "classes/rosado")
 		(rm "classes/rosado")))
 
-(task :default
+(task :default [:clean]
 	  (binding [*compile-path* "classes"]
 		(compile 'rosado.cloak)
 		(compile 'rosado.cloak.main)
