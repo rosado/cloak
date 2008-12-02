@@ -176,8 +176,8 @@
 								(:deps (@*tasks* (to-task index)))))))
 
 (defn make-task-graph [tasks]
-  (let [tab (init-tasks)
-		g (make-graph (count tasks))]
+  (init-tasks)
+  (let [g (make-graph (count tasks))]
 	(reduce add-task-vertex g (task-indices))))
 
 (defn execute-task [task-kw]
