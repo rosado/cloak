@@ -31,4 +31,14 @@
   (throws Exception (cloak/parse-arg ["-f" "CIRCULAR" "a"]))
   (throws Exception (cloak/parse-arg ["-f" "CIRCULAR" "b"])))
 
+(cloak/parse-arg ["-f" "ONCE" "a"])
+
+(deftest run-only-once
+  (is (= 1 @cloak.tests.once/*counter-a*)))
+
+(cloak/parse-arg ["-f" "ONCE" "b" "b"])
+
+(deftest run-only-once
+  (is (= 1 @cloak.tests.once/*counter-b*)))
+
 (run-tests)
