@@ -17,8 +17,8 @@ You can also use the following options:
 * `-d` to describe available task
 * `-t` run cloak without executing any actions
 
-You can also specify a series of task names, which will be executed in
-sequence (from left to right).
+You can also specify a series of task names (without leading colons),
+which will be executed in sequence (from left to right).
 
 Cloak provides two kinds of tasks: tasks and file tasks. 
 
