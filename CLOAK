@@ -1,4 +1,5 @@
 (ns rosado.cloak-build
+  (:require [rosado.cloak :as cloak])
   (:use rosado.cloak.main)
   (:use rosado.cloak.actions))
 
@@ -10,7 +11,7 @@
 	  (when (exists? "classes/rosado")
 		(rm "classes/rosado")))
 
-(task :default
+(task :default [:clean]
 	  (binding [*compile-path* "classes"]
 		(compile 'rosado.cloak)
 		(compile 'rosado.cloak.main)
@@ -27,3 +28,9 @@
 	  (when-not (exists? "bin")
 		(mkdir "bin"))
 	  (sh "jar cf bin/rosado.cloak.jar -C classes rosado" :dofail))
+
+
+(task :test
+	  (binding [cloak/*CWD* (str (System/getProperty "user.dir") "/tests")]
+		(load-file "tests/basic.clj")))
+

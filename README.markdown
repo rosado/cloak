@@ -74,7 +74,7 @@ Dependencies
 ------------
 
 Cloak requires rosado.math.graph and rosado.io, my helper libraries
-which are in the lib directory and available as [rosado libs][mylibs]
+which are in the lib directory and available as [libs4clj][mylibs]
 from github. To run the tests you'll need test-is from
 [clojure-contrib][contrib].
 

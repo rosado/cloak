@@ -42,19 +42,19 @@
 (defmethod to-task java.lang.String [fname]
   ((@task-table :to-int) fname))
 
-(defn add-task [task-name task-info]
+(defn save-task [task-name task-info]
   (dosync (ref-set *tasks* (assoc @*tasks* task-name task-info))))
 
 (defn- annotate-task 
   "Adds metadata to task. Does not save it in *tasks*."
-  [tsk kw val]
-  (let [t (to-task tsk)]
-	(with-meta t (merge (meta t) {kw val}))))
+  [task-name kw val]
+  (let [t (@*tasks* task-name)]
+	(save-task task-name (with-meta t (merge {} (meta t) {kw val})))))
 
 (defn- task-annotations 
   "Returns annotations (meta-data) of a task."
-  [tsk]
-  (meta (to-task tsk)))
+  [task-name]
+  (meta (@*tasks* task-name)))
 
 (defn do-task [task-name]
   (let [tsk (@*tasks* task-name)]
@@ -105,7 +105,7 @@
 (defmacro task [task-name & rst]
   (fail-if-defined task-name)
   (let [task (to-task-struct rst)]
-	`(add-task ~task-name ~task)))
+	`(save-task ~task-name ~task)))
 
 (defn- pre-check-fn [file-name fnames]
   `(fn [#^String e#]
@@ -125,7 +125,7 @@
 		fnames (doall (filter #(isa? (class %) String) (:deps task)))
 		pre-check  `(fn [] (some ~(pre-check-fn file-name fnames) (list ~@fnames)))
 		ftask (assoc task :pre-check pre-check)]
-	`(add-task ~file-name ~ftask)))
+	`(save-task ~file-name ~ftask)))
 
 (defn- make-table
   "Makes a dispatch table between task names and indices."
@@ -172,13 +172,12 @@
   (add-vertex g
 			  index
 			  (make-vertex {}
-						   (let [alist (map #(to-task %1)
-											(:deps (@*tasks* (to-task index))))]
-							 (when alist alist)))))
+						   (map #(to-task %1)
+								(:deps (@*tasks* (to-task index)))))))
 
 (defn make-task-graph [tasks]
-  (let [tab (init-tasks)
-		g (make-graph (count tasks))]
+  (init-tasks)
+  (let [g (make-graph (count tasks))]
 	(reduce add-task-vertex g (task-indices))))
 
 (defn execute-task [task-kw]
@@ -187,12 +186,14 @@
 	  (println "ZADANIA: " (task-indices) "//" (task-names)))
 	(let [g (sort-tasks (make-task-graph @*tasks*) (to-task task-kw))])
 	(doseq [q *queue*]
-		(println "== Executing task" (to-task q))
-	  (try
-	   (do-task (to-task q))
+	  (try	   
+	   (when-not (:done (task-annotations task-kw))
+		 (println "== Executing task" )
+		 (do-task (to-task q))
+		 (annotate-task (to-task q) :done true)
+		 (newline)
+		 (println "Done.")) 
 	   (catch Exception e
 		 (*error-handler* "Error executing task" q)
-		 (throw e)))
-	  (newline)
-	  (println "Done."))))
+		 (throw e))))))
 

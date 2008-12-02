@@ -17,6 +17,7 @@
 (def *default-task* :default)
 (def *describe-only* false)
 (def *target-queue* [])
+(def *CWD* (System/getProperty "user.dir"))
 (def path-sep #^java.lang.String (java.io.File/separator))
 
 (defn error [& args]
@@ -28,7 +29,7 @@
   []
   (clear-tasks)
   (try
-   (load-file *default-cloak-file*)
+   (load-file (str *CWD* path-sep *default-cloak-file*))
    (catch Exception e
 	 (error "Error loading cloak file.")
 	 (error (.getMessage e))
