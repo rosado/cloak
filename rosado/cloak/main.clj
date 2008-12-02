@@ -172,9 +172,8 @@
   (add-vertex g
 			  index
 			  (make-vertex {}
-						   (let [alist (map #(to-task %1)
-											(:deps (@*tasks* (to-task index))))]
-							 (when alist alist)))))
+						   (map #(to-task %1)
+								(:deps (@*tasks* (to-task index)))))))
 
 (defn make-task-graph [tasks]
   (let [tab (init-tasks)
