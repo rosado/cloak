@@ -184,16 +184,16 @@
   (binding [*queue* []]
 	(when *verbose*
 	  (println "ZADANIA: " (task-indices) "//" (task-names)))
-	(let [g (sort-tasks (make-task-graph @*tasks*) (to-task task-kw))])
+	(sort-tasks (make-task-graph @*tasks*) (to-task task-kw))
 	(doseq [q *queue*]
 	  (try	   
-	   (when-not (:done (task-annotations task-kw))
-		 (println "== Executing task" )
+	   (when-not (:done (task-annotations (to-task q)))
+		 (println "== Executing task" (to-task q))
 		 (do-task (to-task q))
 		 (annotate-task (to-task q) :done true)
 		 (newline)
 		 (println "Done.")) 
 	   (catch Exception e
-		 (*error-handler* "Error executing task" q)
+		 (*error-handler* "Error executing task" task-kw)
 		 (throw e))))))
 
