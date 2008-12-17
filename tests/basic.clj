@@ -18,18 +18,18 @@
   (cloak/parse-arg ["-h" "some-word"]))
 
 (deftest cmdline-opts
-  (throws Exception (opt-f))
-  (throws Exception (opt-t-h))
-  (throws Exception (opt-h-t))
-  (throws Exception (opt-h-word)))
+  (is (thrown? Exception (opt-f)))
+  (is (thrown? Exception (opt-t-h)))
+  (is (thrown? Exception (opt-h-t)))
+  (is (thrown? Exception (opt-h-word))))
 
 (deftest simple-task
   (is (= nil (cloak/parse-arg ["a"])))
-  (throws Exception (cloak/parse-arg ["nonexisiting-task"])))
+  (is (thrown? Exception (cloak/parse-arg ["nonexisiting-task"]))))
 
 (deftest circular-dep-task
-  (throws Exception (cloak/parse-arg ["-f" "CIRCULAR" "a"]))
-  (throws Exception (cloak/parse-arg ["-f" "CIRCULAR" "b"])))
+  (is (thrown? Exception (cloak/parse-arg ["-f" "CIRCULAR" "a"])))
+  (is (thrown? Exception (cloak/parse-arg ["-f" "CIRCULAR" "b"]))))
 
 (cloak/parse-arg ["-f" "ONCE" "a"])
 
