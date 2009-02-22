@@ -94,7 +94,7 @@
 (defn- to-task-struct [sequ]
   (loop [r sequ tsk (struct task-struct nil nil nil)]
 	(if (not (tsk :actions))			;:actions should be added last
-	  (recur (rest r) (parse-task tsk r))
+	  (recur (next r) (parse-task tsk r))
 	  tsk)))
 
 ;; throws exception if task already defined

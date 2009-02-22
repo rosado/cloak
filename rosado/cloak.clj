@@ -99,17 +99,17 @@
 
 (defmethod parse-arg "-d" [args]
   (binding [*describe-only* true]
-	(parse-arg (rest args))))
+	(parse-arg (next args))))
 
 (defmethod parse-arg "-t" [args]
   (println "Following actions won't be performed: ")
-  (when (some #{"-h" "-d"} (rest args))
+  (when (some #{"-h" "-d"} (next args))
 	(print-usage)
 	(throw (Exception. "Wrong parameters.")))
-  (parse-arg (rest args)))
+  (parse-arg (next args)))
 
 (defmethod parse-arg "-h" [args]
-  (if (or (rest args) *describe-only*)
+  (if (or (next args) *describe-only*)
 	(do
 	  (print-usage)
 	  (throw (Exception. "Wrong parameters.")))
@@ -120,7 +120,7 @@
 	(print-usage)
 	(throw (Exception. "Missing file argument (-f ...)")))
   (let [cfname (second args)
-		rargs (rrest args)]
+		rargs (nnext args)]
 	(if (some #{"-h"} rargs) ;those args don't make sense now
 	  (do
 		(print-usage)
