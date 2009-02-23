@@ -15,13 +15,8 @@
   (:require [rosado.io :as io :only (exists? delete mkdir)])
   (:import (java.io File FileInputStream FileOutputStream)))
 
-(defn exists?
-  "Returns true if file/directory exists."
-  [fname] (io/exists? fname))
-
 (defn sh
-  "Executes a shell command. Fails silently.
-  Pass :dofail keyword argument if you want it to throw exception."
+  "Performs a shell command."
   ([command]
 	 (run-command command))
   ([command flag]
