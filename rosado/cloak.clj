@@ -7,7 +7,7 @@
 ;; which can be found in the file CPL.TXT at the root of this
 ;; distribution.  By using this software in any fashion, you are
 ;; agreeing to be bound by the terms of this license.  You must not
-;; remove this notice, or any other, from this software. 
+;; remove this notice, or any other, from this software.
 
 (ns rosado.cloak
   (:use rosado.cloak.main))
@@ -31,64 +31,64 @@
   (try
    (load-file (str *CWD* path-sep *default-cloak-file*))
    (catch Exception e
-	 (error "Error loading cloak file.")
-	 (error (.getMessage e))
-	 (throw e))))
+     (error "Error loading cloak file.")
+     (error (.getMessage e))
+     (throw e))))
 
 (defn run-tasks
   "Run given tasks. Aborts on first failed task."
   [kwords]
   (println "Running tasks:" (apply str (interpose " "(map str kwords))))
   (doseq [kw kwords]
-	  (when-not (contains? @*tasks* kw)
-		(error "No such task:" kw)
-		(throw (Exception. "Specified task is not defined."))))
+    (when-not (contains? @*tasks* kw)
+      (error "No such task:" kw)
+      (throw (Exception. "Specified task is not defined."))))
   (doseq [kw kwords]
-	  (try
-	   (binding [*error-handler* error]
-		 (execute-task kw))
-	   (catch Exception e
-		 (error "Error: Couldn't finish task" kw)
-		 (error (.getMessage e))
-		 (throw e)))))
+    (try
+     (binding [*error-handler* error]
+       (execute-task kw))
+     (catch Exception e
+       (error "Error: Couldn't finish task" kw)
+       (error (.getMessage e))
+       (throw e)))))
 
 (defn print-desc
   "Prints task descriptions."
   [taskmap]
   (do
-	(doseq [t (for [key (keys taskmap)]
-				(assoc (@*tasks* key) :name key))]
-		(print (format " %1$-16s" (t :name)))
-	  (if (t :desc)
-		(println (t :desc))
-		(println)))))
+    (doseq [t (for [key (keys taskmap)]
+                (assoc (@*tasks* key) :name key))]
+      (print (format " %1$-16s" (t :name)))
+      (if (t :desc)
+        (println (t :desc))
+        (println)))))
 
 (defn run-program []
   (when *default-cloak-file*
-	(load-tasks))						   ;lets try to load the tasks from file
+    (load-tasks))    ;lets try to load the tasks from file
   (try
    (init-tasks)
    (catch Exception e
-	 (error "Error initializing tasks")
-	 (error (.getMessage e))
-	 (throw e)))
+     (error "Error initializing tasks")
+     (error (.getMessage e))
+     (throw e)))
   ;; perform actions
   (try
    (cond *describe-only* (print-desc @*tasks*)
-		 (empty? *target-queue*) (run-tasks [*default-task*]) 
-		 :else (run-tasks *target-queue*))))
+         (empty? *target-queue*) (run-tasks [*default-task*])
+         :else (run-tasks *target-queue*))))
 
-(def #^{:private true} 
-	 cmd-line-opts {"-d" "describe tasks"
-					  "-f taskfile" "use taskfile instad of CLOAK"
-					  "-t" "run cloak, but don't execute actions (try)"
-					  "-h" "print help"})
+(def #^{:private true}
+     cmd-line-opts {"-d" "describe tasks"
+                    "-f taskfile" "use taskfile instad of CLOAK"
+                    "-t" "run cloak, but don't execute actions (try)"
+                    "-h" "print help"})
 
 (defn print-help []
   (println " Cloak. A simple automation tool.")
   (newline)
   (doseq [[opt des] cmd-line-opts]
-	  (println (format " %1$-15s %2$s" opt des))))
+    (println (format " %1$-15s %2$s" opt des))))
 
 (defn print-usage []
   (error (format "usage: %s [options] [task-name]" *progname*))
@@ -99,39 +99,39 @@
 
 (defmethod parse-arg "-d" [args]
   (binding [*describe-only* true]
-	(parse-arg (next args))))
+    (parse-arg (next args))))
 
 (defmethod parse-arg "-t" [args]
   (println "Following actions won't be performed: ")
   (when (some #{"-h" "-d"} (next args))
-	(print-usage)
-	(throw (Exception. "Wrong parameters.")))
+    (print-usage)
+    (throw (Exception. "Wrong parameters.")))
   (parse-arg (next args)))
 
 (defmethod parse-arg "-h" [args]
   (if (or (next args) *describe-only*)
-	(do
-	  (print-usage)
-	  (throw (Exception. "Wrong parameters.")))
-	(print-help)))
+    (do
+      (print-usage)
+      (throw (Exception. "Wrong parameters.")))
+    (print-help)))
 
 (defmethod parse-arg "-f" [args]
   (when-not (second args)
-	(print-usage)
-	(throw (Exception. "Missing file argument (-f ...)")))
+    (print-usage)
+    (throw (Exception. "Missing file argument (-f ...)")))
   (let [cfname (second args)
-		rargs (nnext args)]
-	(if (some #{"-h"} rargs) ;those args don't make sense now
-	  (do
-		(print-usage)
-		(throw (Exception. "Wrong parameters.")))
-	  (binding [*default-cloak-file* cfname]
-		(parse-arg rargs)))))
+        rargs (nnext args)]
+    (if (some #{"-h"} rargs)          ;those args don't make sense now
+      (do
+        (print-usage)
+        (throw (Exception. "Wrong parameters.")))
+      (binding [*default-cloak-file* cfname]
+        (parse-arg rargs)))))
 
 (defmethod parse-arg :default [args]
   (let [tnames (vec (map keyword args))] ;remaining params are task names
-	(binding [*target-queue* tnames]
-	  (run-program))))
+    (binding [*target-queue* tnames]
+      (run-program))))
 
 (defmethod parse-arg nil [args]
   (run-program))
@@ -140,8 +140,8 @@
   (try
    (parse-arg args)
    (catch Exception e
-	 (println "Error:" (.getMessage e))
-	 (System/exit 1))))
+     (println "Error:" (.getMessage e))
+     (System/exit 1))))
 
 ;; (binding [*warn-on-reflection* false]
 ;; ;  (parse-arg *command-line-args*)

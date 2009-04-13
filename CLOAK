@@ -7,30 +7,30 @@
 ;; also, classes dir must already be in your classpath (for compilation)
 
 (task :clean
-	  "Removes the 'classes' directory "
-	  (when (exists? "classes/rosado")
-		(rm "classes/rosado")))
+      "Removes the 'classes' directory "
+      (when (exists? "classes/rosado")
+        (rm "classes/rosado")))
 
 (task :default [:clean]
-	  (binding [*compile-path* "classes"]
-		(compile 'rosado.cloak)
-		(compile 'rosado.cloak.main)
-		(compile 'rosado.cloak.actions)))
+      (binding [*compile-path* "classes"]
+        (compile 'rosado.cloak)
+        (compile 'rosado.cloak.main)
+        (compile 'rosado.cloak.actions)))
 
 (task :jar-src
-	  "Creates a jar file with Cloak's sources"
-	  (sh "jar cf bin/rosado.cloak.jar rosado" :dofail))
+      "Creates a jar file with Cloak's sources"
+      (sh "jar cf bin/rosado.cloak.jar rosado" :dofail))
 
 (task :jar ["bin/rosado.cloak.jar"]
-	  "Creates a jar file with compiled Cloak class files.")
+      "Creates a jar file with compiled Cloak class files.")
 
 (file "bin/rosado.cloak.jar" ["classes/rosado"]
-	  (when-not (exists? "bin")
-		(mkdir "bin"))
-	  (sh "jar cf bin/rosado.cloak.jar -C classes rosado" :dofail))
+      (when-not (exists? "bin")
+        (mkdir "bin"))
+      (sh "jar cf bin/rosado.cloak.jar -C classes rosado" :dofail))
 
 
 (task :test
-	  (binding [cloak/*CWD* (str (System/getProperty "user.dir") "/tests")]
-		(load-file "tests/basic.clj")))
+      (binding [cloak/*CWD* (str (System/getProperty "user.dir") "/tests")]
+        (load-file "tests/basic.clj")))
 
