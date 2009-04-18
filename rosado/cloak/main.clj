@@ -28,7 +28,10 @@
 (def #^{:private true}
      task-order)
 
+(def *current-task*)                    ;holds keyword of currently executed task
 (def *verbose* false)
+(def *try-only* false)
+(def *notify-handler* println)
 (def *error-handler* println)
 
 (defmulti to-task class)
@@ -48,6 +51,7 @@
 (defn- annotate-task
   "Adds metadata to task. Does not save it in *tasks*."
   [task-name kw val]
+  (assert (not= nil task-name))
   (let [t (@*tasks* task-name)]
     (save-task task-name (with-meta t (merge {} (meta t) {kw val})))))
 
@@ -57,16 +61,17 @@
   (meta (@*tasks* task-name)))
 
 (defn do-task [task-name]
+  (assert (not= nil task-name))
   (let [tsk (@*tasks* task-name)]
     (if-let [prefun (tsk :pre-check)]
       (if (prefun)
         (when-let [actions (tsk :actions)]
           (actions))
-        (println " * skipping"))
+        (*notify-handler* " * skipping *"))
       (when-let [actions (tsk :actions)]
         (actions)))))
 
-(defn clear-tasks
+(defn clear-tasks!
   "Clears task table and *tasks* map (which holds defined tasks)"
   []
   (dosync
@@ -113,7 +118,7 @@
            o# (java.io.File. e#)]
        (if (not (io/exists? o#))
          (let [msg# (format "File dependency not met: %s" e#)]
-           (println "Failure:" msg#)
+           (*error-handler* "Failure:" msg#)
            (throw (Exception. msg#))))
        (if (io/exists? f#)
          (io/newer? o# f#)
@@ -181,18 +186,22 @@
     (reduce add-task-vertex g (task-indices))))
 
 (defn execute-task [task-kw]
-  (binding [*queue* []]
+  (binding [*queue* [] *current-task* task-kw]
     (when *verbose*
-      (println "ZADANIA: " (task-indices) "//" (task-names)))
+      (*notify-handler* "TASKS//Indices:" (task-indices) "//" (task-names)))
     (sort-tasks (make-task-graph @*tasks*) (to-task task-kw))
     (doseq [q *queue*]
       (try
        (when-not (:done (task-annotations (to-task q)))
-         (println "== Executing task" (to-task q))
-         (do-task (to-task q))
+         (*notify-handler* "== Executing task" (to-task q))
+         (binding [*current-task* (to-task q)]
+           (when-not *try-only*
+             (do-task (to-task q))))
          (annotate-task (to-task q) :done true)
-         (newline)
-         (println "Done."))
+         (*notify-handler* "Done."))
        (catch Exception e
-         (*error-handler* "Error executing task" task-kw)
+         (*error-handler* "Error executing task")
+         (*error-handler* (.getMessage e))
+         (when *verbose*
+           (*error-handler* (interpose "\n" (.getStackTrace e))))
          (throw e))))))

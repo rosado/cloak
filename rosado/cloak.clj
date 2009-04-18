@@ -10,7 +10,8 @@
 ;; remove this notice, or any other, from this software.
 
 (ns rosado.cloak
-  (:use rosado.cloak.main))
+  (:use rosado.cloak.main)
+  (:gen-class))
 
 (def *progname* "cloak")
 (def *default-cloak-file* "CLOAK")
@@ -20,19 +21,29 @@
 (def *CWD* (System/getProperty "user.dir"))
 (def path-sep #^java.lang.String (java.io.File/separator))
 
+(defn notification [& args]
+  (apply println (cons " NOTIFICATION:" args)))
+
 (defn error [& args]
-  (apply println args))
+  (apply println (cons " ERROR:" args)))
+
+(defn task-error
+  "Error handler function used for task failures."
+  [& args]
+  (apply println (cons (str " " \[ (name *current-task*) \]) args)))
 
 (defn- load-tasks
   "Loads tasks from file (*default-cloak-file*) and creates
   task-table for use by other fns"
   []
-  (clear-tasks)
+  (clear-tasks!)
   (try
    (load-file (str *CWD* path-sep *default-cloak-file*))
+   (catch java.io.FileNotFoundException e
+     (error "Can't find cloak file" (str \" *default-cloak-file* \"))
+     (throw e))
    (catch Exception e
-     (error "Error loading cloak file.")
-     (error (.getMessage e))
+     (error "Loading cloak file" (str \" *default-cloak-file* \") "failed.")
      (throw e))))
 
 (defn run-tasks
@@ -45,27 +56,29 @@
       (throw (Exception. "Specified task is not defined."))))
   (doseq [kw kwords]
     (try
-     (binding [*error-handler* error]
+     (binding [*error-handler* task-error]
        (execute-task kw))
      (catch Exception e
-       (error "Error: Couldn't finish task" kw)
        (error (.getMessage e))
        (throw e)))))
 
 (defn print-desc
   "Prints task descriptions."
   [taskmap]
+  (newline)
   (do
     (doseq [t (for [key (keys taskmap)]
                 (assoc (@*tasks* key) :name key))]
-      (print (format " %1$-16s" (t :name)))
+      (print (format " %1$-16s" (if (keyword? (t :name))
+                                  (name (t :name))
+                                  (t :name))))
       (if (t :desc)
         (println (t :desc))
-        (println)))))
+        (newline)))))
 
 (defn run-program []
   (when *default-cloak-file*
-    (load-tasks))    ;lets try to load the tasks from file
+    (load-tasks))                ;lets try to load the tasks from file
   (try
    (init-tasks)
    (catch Exception e
@@ -91,8 +104,8 @@
     (println (format " %1$-15s %2$s" opt des))))
 
 (defn print-usage []
-  (error (format "usage: %s [options] [task-name]" *progname*))
-  (error (format "try '%s -h' for more information." *progname*)))
+  (println (format "usage: %s [options] [task-name]" *progname*))
+  (println (format "try '%s -h' for more information." *progname*)))
 
 ;; parses command line arguments
 (defmulti parse-arg first)
@@ -102,11 +115,12 @@
     (parse-arg (next args))))
 
 (defmethod parse-arg "-t" [args]
-  (println "Following actions won't be performed: ")
+  (notification "The actions won't be performed (option -t supplied).")
   (when (some #{"-h" "-d"} (next args))
     (print-usage)
     (throw (Exception. "Wrong parameters.")))
-  (parse-arg (next args)))
+  (binding [*try-only* true]
+    (parse-arg (next args))))
 
 (defmethod parse-arg "-h" [args]
   (if (or (next args) *describe-only*)
@@ -140,7 +154,8 @@
   (try
    (parse-arg args)
    (catch Exception e
-     (println "Error:" (.getMessage e))
+     (newline)
+     (println "Build failed.\n")
      (System/exit 1))))
 
 ;; (binding [*warn-on-reflection* false]
