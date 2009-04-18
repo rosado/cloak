@@ -11,12 +11,6 @@
       (when (exists? "classes/rosado")
         (rm "classes/rosado")))
 
-(task :default [:clean]
-      (binding [*compile-path* "classes"]
-        (compile 'rosado.cloak)
-        (compile 'rosado.cloak.main)
-        (compile 'rosado.cloak.actions)))
-
 (task :jar-src
       "Creates a jar file with Cloak's sources"
       (sh "jar cf bin/rosado.cloak.jar rosado" :dofail))
@@ -29,8 +23,6 @@
         (mkdir "bin"))
       (sh "jar cf bin/rosado.cloak.jar -C classes rosado" :dofail))
 
-
 (task :test
       (binding [cloak/*CWD* (str (System/getProperty "user.dir") "/tests")]
         (load-file "tests/basic.clj")))
-
