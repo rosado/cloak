@@ -1,0 +1,79 @@
+<project name="cloak" default="props" basedir=".">
+
+  <description>
+	A simple build system for Clojure.
+  </description>
+
+	<!-- PROPERTIES -->
+	<property name="lib.dir" location="${basedir}/lib" />
+  <property name="dist.dir" location="${basedir}/bin" />
+	<property name="build.classes.dir" location="${basedir}/classes" />
+
+	<path id="compile.classpath">
+    <pathelement path="${clj.dir}/clojure.jar" />
+		<fileset dir="${lib.dir}">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+	<path id="clj.compile.classpath">
+    <pathelement path="${clj.dir}/clojure.jar" />
+		<path refid="compile.classpath" />
+		<path location="${basedir}" />
+		<path location="${build.classes.dir}" />
+	</path>
+
+	<path id="run.classpath">
+    <path refid="compile.classpath" />
+		<path location="${build.classes.dir}" />
+	</path>
+
+	<target name="init">
+		<mkdir dir="classes" />	
+	</target>
+
+	<!-- TARGETS -->
+	
+	<target name="clean">
+		<delete dir="classes" />
+	</target>
+	
+	<target name="compile-clojure-src"
+					description="Compile Clojure sources"
+          depends="init">
+		<java classname="clojure.lang.Compile"
+          classpath="${build}:${cljsrc}">
+			<sysproperty key="clojure.compile.path" value="${build.classes.dir}" />
+			<classpath refid="clj.compile.classpath" />
+      <arg value="rosado.cloak"/>
+      <arg value="rosado.cloak.actions"/>
+      <arg value="rosado.cloak.main" />
+		</java>
+	</target>
+
+	<target name="compile" depends="compile-clojure-src"
+          description="Compile Cloak.">
+	</target>
+	
+  <target name="run" 
+					depends="">
+		<java classname="rosado.cloak"
+					classpathref="run.classpath"
+          fork="true"
+          spawn="false">
+      <sysproperty key="java.library.path" path="${native.lib.dir}" />
+		</java>
+	</target>
+
+  <target name="jar" depends="compile"
+          description="Package compiled *.class files into a jar.">
+    <jar destfile="${dist.dir}/rosado.cloak.jar" basedir="${build.classes.dir}"/>
+  </target>
+
+	<!-- UTIL TARGETS -->
+
+	<target name="props">
+		<echoproperties />
+	</target>
+
+</project>
