@@ -43,8 +43,8 @@ Tasks:
 			  (action args))
 
 Where task's name should be a keyword, task's dependencies should be a
-vector of task names of file task names (optional), description should
-be a string (optional) and the the task's body.
+vector of task names or file task names (optional), description should
+be a string (optional).
 
 File tasks:
 
@@ -54,12 +54,17 @@ File tasks:
 
 File tasks can't be specified as targets on the command line.
 
+Compiling Cloak
+---------------
+
+To compile Cloak run `ant compile` or `ant jar`. See below for
+dependencies.
+
 Compiling Clojure sources
 -------------------------
 
-Currently AOT (Ahead Of Time) compilation is still an experimental
-feature of Clojure (but not for long). It works (look at this
-project's CLOAK file) but the following must be true for it to work:
+It works (look at this project's CLOAK file) but the following must be
+true for it to work:
 
 * directory with sources *AND* "classes" directory must be in your classpath
 * the "classes" directory must exists when the JVM starts up to execute the `compile` function (otherwise strange errors might occur).
@@ -69,9 +74,10 @@ What it isn't
 
 It's not an `ant` or `maven` replacement. 
 
-
 Dependencies
 ------------
+
+To compile Cloak, put clojure.jar in the `lib` directory.
 
 Cloak requires rosado.math.graph and rosado.io, my helper libraries
 which are in the lib directory and available as [libs4clj][mylibs]
