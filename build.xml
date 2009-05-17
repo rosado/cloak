@@ -67,7 +67,9 @@
 
   <target name="jar" depends="compile"
           description="Package compiled *.class files into a jar.">
-    <jar destfile="${dist.dir}/rosado.cloak.jar" basedir="${build.classes.dir}"/>
+    <jar destfile="${dist.dir}/rosado.cloak.jar">
+      <fileset dir="${build.classes.dir}" includes="rosado/**/*.class"/>
+    </jar>
   </target>
 
 	<!-- UTIL TARGETS -->
