@@ -1,5 +1,9 @@
 # CLOAK #
 
+Note: *This project is no longer maintained.* It doesn't make sense 
+to wrap Ant, and it's a necessity to play along with the rest of the
+Java ecosystem.
+
 Cloak is a simplistic automation tool written in [Clojure][]. It's heavily
 inspired by ruby [rake][]. 
 
